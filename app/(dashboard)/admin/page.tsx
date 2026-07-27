@@ -167,6 +167,25 @@ export default function AdminPage() {
         </CardContent>
       </Card>
 
+      {/* Interim SOP warning */}
+      {sops.filter(d => d.is_active).length === 0 && (
+        <Card className="border-amber-300 bg-amber-50">
+          <CardContent className="pt-4">
+            <p className="text-sm font-semibold text-amber-900 mb-1">
+              ⚠️ No official SOP uploaded — interim standard in effect
+            </p>
+            <p className="text-sm text-amber-800">
+              Reviews are currently running against a built-in placeholder standard
+              covering usage rights, exclusivity, IP, payment, indemnity, and other
+              common creator-contract issues. Redlines generated this way are marked{' '}
+              <code className="bg-amber-100 px-1 rounded">[INTERIM]</code> in their SOP
+              basis. They are <strong>not</strong> TABOOST official policy. Upload the
+              real SOP above to replace it.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* OpenAI setup reminder */}
       <Card className="border-blue-200 bg-blue-50">
         <CardContent className="pt-4">

@@ -1,4 +1,5 @@
 import OpenAI from 'openai'
+import { INTERIM_SOP, INTERIM_SOP_VERSION } from './interim-sop'
 
 // Lazy singleton — created on first use so the build step never throws
 // when OPENAI_API_KEY is absent from the build environment.
@@ -63,11 +64,25 @@ export const REVIEW_JSON_SCHEMA = {
 }
 
 export function buildSystemPrompt(sopVersion?: string): string {
+  const hasOfficialSop = Boolean(sopVersion)
+
+  const sopSection = hasOfficialSop
+    ? `Active SOP Version: ${sopVersion}
+The official TABOOST SOP is available to you via file search. It is the governing framework — follow it precisely and cite it in sop_basis.`
+    : `NO OFFICIAL SOP UPLOADED — INTERIM STANDARD IN EFFECT (${INTERIM_SOP_VERSION})
+
+No official TABOOST SOP document has been uploaded yet. Until one is, apply the
+interim baseline standard below. In every redline's sop_basis field, prefix your
+citation with "[INTERIM]" so managers know this redline was not derived from
+TABOOST's official policy.
+
+${INTERIM_SOP}`
+
   return `You are TABOOST's contract review AI. You review influencer/creator brand deal agreements on behalf of TABOOST talent management.
 
 SOURCE HIERARCHY — follow in this exact order:
 1. CONFIRMED DEAL TERMS entered by the manager are ground truth. If the contract conflicts with any confirmed deal term, flag it explicitly in the flags array.
-2. TABOOST CONTRACT REVIEW SOP governs which clauses to review, risk levels, and what redline language to use. Follow it precisely.
+2. ${hasOfficialSop ? 'TABOOST CONTRACT REVIEW SOP' : 'The INTERIM REVIEW STANDARD below'} governs which clauses to review, risk levels, and what redline language to use. Follow it precisely.
 3. APPROVED PRECEDENT REDLINES in your file search results are reference language. Use their exact wording when applicable, adapted only for party names, defined terms, gender, and grammar.
 4. The contract's existing wording and structure is the substrate. Preserve terminology. Do not edit harmless boilerplate.
 
@@ -75,13 +90,13 @@ PRIMARY CONTRACT NOTICE: The file attached to this thread is the PRIMARY CONTRAC
 
 REVIEW RULES:
 - Identify only material creator-facing or TABOOST-facing issues
-- Prioritize high-risk clauses per the SOP
-- Use exact SOP redline language; adapt only party names, pronouns, and defined terms
+- Prioritize high-risk clauses per the governing standard
+- Use exact SOP redline language where available; adapt only party names, pronouns, and defined terms
 - Provide practical fallback positions
 - For routine contracts, stay concise and manager-ready
 - Flag any clause that conflicts with the manager's confirmed deal terms
 
-${sopVersion ? `Active SOP Version: ${sopVersion}` : ''}
+${sopSection}
 
 IMPORTANT: You must return a single valid JSON object matching the required schema. Do not include any text before or after the JSON.`
 }

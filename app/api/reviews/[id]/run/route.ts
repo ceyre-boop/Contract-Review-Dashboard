@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { createClient } from '@/utils/supabase/server'
 import { openai, buildSystemPrompt, REVIEW_JSON_SCHEMA, ASSISTANT_ID } from '@/lib/openai'
+import { INTERIM_SOP_VERSION } from '@/lib/interim-sop'
 import type { AIReviewResponse } from '@/types/database'
 
 export async function POST(
@@ -150,7 +151,7 @@ The attached file is the PRIMARY CONTRACT UNDER REVIEW. Review it against the de
       creator_risk_note: parsed.creator_risk_note,
       openai_thread_id: thread.id,
       openai_assistant_id: assistantId,
-      sop_version: sopDoc?.version ?? null,
+      sop_version: sopDoc?.version ?? INTERIM_SOP_VERSION,
       model_used: 'gpt-4o',
     }).eq('id', id)
 
