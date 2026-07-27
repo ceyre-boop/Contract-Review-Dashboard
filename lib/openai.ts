@@ -1,11 +1,24 @@
 import OpenAI from 'openai'
 
-if (!process.env.OPENAI_API_KEY) {
-  console.warn('OPENAI_API_KEY is not set — AI review calls will fail')
+// Lazy singleton — created on first use so the build step never throws
+// when OPENAI_API_KEY is absent from the build environment.
+let _openai: OpenAI | null = null
+
+export function getOpenAI(): OpenAI {
+  if (!_openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      console.warn('OPENAI_API_KEY is not set — AI review calls will fail')
+    }
+    _openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  }
+  return _openai
 }
 
-export const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+// Keep a top-level export so existing imports still work
+export const openai: OpenAI = new Proxy({} as OpenAI, {
+  get(_target, prop) {
+    return (getOpenAI() as unknown as Record<string | symbol, unknown>)[prop]
+  },
 })
 
 // The assistant ID is created once and stored as an env var after initial setup.
